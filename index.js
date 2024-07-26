@@ -3,16 +3,11 @@ const app = express();
 app.use(express.json());
 const PORT = 8081;
 const {users} = require("./data/users.json");
+const user = require("./roots/userRoot.js");
+const book = require("./roots/bookRoot.js");
 
-
-// root-users = /users
-app.get("/users", (req, res) => {
-    res.status(200).json({
-        "users": users,
-    });
-});
-
-
+app.use("/users", user);
+app.use("/books", book);
 //home
 app.get("/", (req, res)=>{
     res.status(200).json({
