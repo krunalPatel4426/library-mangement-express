@@ -134,4 +134,61 @@ app.delete("/:id", (req, res) => {
     });
 });
 
+/**
+ * Route: /users/subscription-details/:id
+ * Method: GET
+ * Description: Get all user Subscription Details
+ * Access: Public
+ * Parameters: ID
+ */
+
+app.get("/subscription-details/:id", (req, res) => {
+    const {id} = req.params;
+    const user = users.find((each) => each.id === id);
+    if(!user){
+        return res.status(404).json({
+            success : false,
+            message : "User Not Found"
+        });
+    }
+    const getDays = (data = "") => {
+        let date;
+        if(data == ""){
+            date = new Date();
+        }else{
+            date = new Date(data);
+        }
+        return Math.floor(date/(1000*60*60*24));
+    };
+
+    const getSubscriptionType = (date) => {
+        if(user.subscriptionType === "Basic"){
+            date += 30;
+        }else if(user.subscriptionType === "Standard"){
+            date += 180;
+        }else{
+            date += 365;
+        }
+        return date;
+    };
+
+    let returnDate = getDays(user.returnDate);
+    let currentDate = getDays();
+    let subscriptionDate = getDays(user.subscriptionDate);
+    let subscriptionExpiration = getSubscriptionType(subscriptionDate);
+
+    const data = {
+        ... user,
+        isSubscriptionExpired : subscriptionExpiration < currentDate,
+        daysLeftForExpiration : subscriptionExpiration < currentDate ? 0 : subscriptionExpiration - currentDate,
+        fine : returnDate < currentDate ? subscriptionDate < currentDate ? 100 : 50 : 0
+    };
+
+    return res.status(200).json({
+        success : true,
+        message : "user's subscription details",
+        data : data
+    });
+});
+
 module.exports = app;
